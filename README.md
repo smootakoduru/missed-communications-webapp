@@ -22,3 +22,7 @@ We learned a lot about Web Development. We learned a lot of HTML, CSS, Javascrip
 
 ## What's next for Missed Communications
 We plan on finishing out project and actually making it fully functional in the future! We hope to give a lot of people a good laugh with this!
+
+##Other Links
+Here is a link to a slides presentation explaining our project:
+https://docs.google.com/presentation/d/1DsiOYVY397r8ahxDIwb5ORcM-GqnomceBvnlFwd3Ffo/edit?usp=sharing 
