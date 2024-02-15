@@ -3,8 +3,9 @@ import io
 import pytesseract
 from openai import OpenAI
 from PIL import Image
-from flask import Flask, request, render_template, jsonify
+from flask import Flask, request, render_template, jsonify, send_from_directory
 from dotenv import load_dotenv
+import tempfile
 
 app = Flask(__name__)
 
@@ -15,27 +16,53 @@ load_dotenv()
 OpenAI.api_key = os.getenv("OPENAI_API_KEY")
 
 # Make sure pytesseract can find the tesseract binary
-pytesseract.pytesseract.tesseract_cmd = r'C:\\Users\\sanju\\tessy\\tesseract.exe'
+pytesseract.pytesseract.tesseract_cmd = os.getenv("TESSERACT_CMD")
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
     return render_template('index.html')
 
+@app.route('/static/<path:path>')
+def send_static(path):
+    return send_from_directory('static', path)
+
 @app.route('/analyze', methods=['POST'])
 def analyze():
-    # Get the uploaded image
-    img = request.files['image']
+    try:
+        # Get the uploaded image
+        img = request.files['image']
 
-    # Read the image using Pillow
-    image = Image.open(img)
+        # Save the image to a temporary file
+        with tempfile.NamedTemporaryFile(delete=False) as temp:
+            img.save(temp)
 
-    # Perform the OCR using pytesseract
-    text = pytesseract.image_to_string(image)
+            # Read the image using Pillow
+            image = Image.open(temp.name)
 
-    # Process the extracted text and generate a response
-    response = process_text(text)
+            # Perform the OCR using pytesseract
+            text = pytesseract.image_to_string(image)
 
-    return jsonify(response)
+            # Process the extracted text and generate a response
+            response = process_text(text)
+
+            return jsonify(response)
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+@app.route('/analyze_text', methods=['POST'])
+def analyze_text():
+    try:
+        # Get the message from the POST request
+        message = request.form['message']
+
+        # Process the message and generate a response
+        response = process_text(message)
+
+        return jsonify(response)
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
 
 def process_text(text):
     # Generate a buffer message using OpenAI's API
